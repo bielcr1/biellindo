@@ -5,40 +5,44 @@
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>Biel te ama muito <3</title>
 <style>
-  @import url('https://fonts.googleapis.com/css2?family=Pacifico&family=Roboto:wght@700&display=swap');
+  @import url('https://fonts.googleapis.com/css2?family=Pacifico&display=swap');
 
-  body, html {
+  html, body {
     margin: 0; padding: 0;
     overflow: hidden;
     height: 100vh;
-    font-family: 'Roboto', sans-serif;
-    background: url('https://images.unsplash.com/photo-1470770903676-69b98201ea1c?auto=format&fit=crop&w=1470&q=80') no-repeat center center fixed;
-    background-size: cover;
-    color: white;
+    background: #000010; /* fundo preto bem escuro */
+    font-family: 'Pacifico', cursive;
+    color: #ff4d6d;
     user-select: none;
   }
   #gameContainer {
     position: relative;
     width: 100vw;
     height: 100vh;
+    overflow: hidden;
   }
-  canvas#stars {
+  canvas#space {
     position: absolute;
     top: 0; left: 0;
-    width: 100%; height: 100%;
+    width: 100%;
+    height: 100%;
     z-index: 0;
+    display: block;
+    background: radial-gradient(ellipse at center, #0b0c16 0%, #000010 80%);
   }
   #planetsContainer {
     position: absolute;
     top: 0; left: 0;
     width: 100%; height: 100%;
+    pointer-events: none;
     z-index: 1;
   }
   .planet {
     position: absolute;
     border-radius: 50%;
-    box-shadow: 0 0 30px 12px rgba(255,255,255,0.6);
     cursor: pointer;
+    box-shadow: 0 0 20px 6px rgba(255,255,255,0.4);
     transition: transform 0.3s ease, opacity 0.5s ease;
   }
   .planet:hover {
@@ -51,15 +55,14 @@
     background: rgba(0,0,0,0.75);
     padding: 30px 60px;
     border-radius: 25px;
-    font-family: 'Pacifico', cursive;
     font-size: 3em;
     color: #ff4d6d;
     text-shadow: 0 0 15px #ff4d6d;
     display: none;
     z-index: 10;
     text-align: center;
+    pointer-events: none;
   }
-  /* Animação de corações e planetas ao redor da mensagem */
   .floating-effect {
     position: fixed;
     top: 50%; left: 50%;
@@ -73,7 +76,7 @@
     position: absolute;
     font-size: 25px;
     animation: floatUp 4s linear infinite;
-    opacity: 0.8;
+    opacity: 0.9;
     user-select: none;
   }
   .heart {
@@ -89,10 +92,10 @@
   @keyframes floatUp {
     0% {
       transform: translateY(0) scale(1);
-      opacity: 0.8;
+      opacity: 0.9;
     }
     100% {
-      transform: translateY(-150px) scale(1.3);
+      transform: translateY(-180px) scale(1.3);
       opacity: 0;
     }
   }
@@ -101,15 +104,15 @@
 <body>
 
 <div id="gameContainer">
-  <canvas id="stars"></canvas>
+  <canvas id="space"></canvas>
   <div id="planetsContainer"></div>
   <div id="message">Biel te ama muito &lt;3</div>
   <div class="floating-effect" id="floatingEffect"></div>
 </div>
 
 <script>
-// ======= Fundo Estrelado Animado =======
-const canvas = document.getElementById('stars');
+// ==== Canvas Galáxia ==== //
+const canvas = document.getElementById('space');
 const ctx = canvas.getContext('2d');
 let w, h;
 function resize() {
@@ -140,26 +143,47 @@ class Star {
 }
 
 const stars = [];
-for(let i = 0; i < 200; i++) {
+for(let i = 0; i < 300; i++) {
   stars.push(new Star());
 }
 
-function animateStars() {
-  ctx.clearRect(0, 0, w, h);
-  stars.forEach(s => s.draw());
-  requestAnimationFrame(animateStars);
+class Planet {
+  constructor(size, color, glow) {
+    this.size = size;
+    this.color = color;
+    this.glow = glow;
+    this.x = Math.random() * (w - size - 60) + 30;
+    this.y = Math.random() * (h - size - 60) + 30;
+    this.angle = Math.random() * 360;
+    this.element = null;
+  }
+  createElement() {
+    const planet = document.createElement('div');
+    planet.classList.add('planet');
+    planet.style.width = this.size + 'px';
+    planet.style.height = this.size + 'px';
+    planet.style.background = this.color;
+    planet.style.boxShadow = `0 0 30px 10px ${this.glow}`;
+    planet.style.left = this.x + 'px';
+    planet.style.top = this.y + 'px';
+    planet.style.pointerEvents = 'auto';
+    this.element = planet;
+    return planet;
+  }
+  rotate() {
+    this.angle += 0.2;
+    this.element.style.transform = `rotate(${this.angle}deg)`;
+  }
 }
-animateStars();
 
-// ======= Planetas =======
 const planetsContainer = document.getElementById('planetsContainer');
 const message = document.getElementById('message');
 const floatingEffect = document.getElementById('floatingEffect');
 
 const planetData = [
-  { size: 80, color: '#ff6f91', glow: '#ff6f91' },
+  { size: 70, color: '#ff6f91', glow: '#ff6f91' },
   { size: 60, color: '#4d79ff', glow: '#4d79ff' },
-  { size: 70, color: '#ffc75f', glow: '#ffc75f' },
+  { size: 65, color: '#ffc75f', glow: '#ffc75f' },
   { size: 65, color: '#00c9a7', glow: '#00c9a7' },
   { size: 75, color: '#d65db1', glow: '#d65db1' },
   { size: 55, color: '#845ec2', glow: '#845ec2' },
@@ -169,72 +193,59 @@ const planetData = [
   { size: 80, color: '#2d2d34', glow: '#2d2d34' },
 ];
 
+const planets = [];
 let clickedCount = 0;
 const totalPlanets = planetData.length;
 
-function randomPosition(size) {
-  const padding = 30;
-  const x = Math.random() * (window.innerWidth - size - padding * 2) + padding;
-  const y = Math.random() * (window.innerHeight - size - padding * 2) + padding;
-  return { x, y };
-}
-
 function createPlanets() {
   planetData.forEach((p, i) => {
-    const planet = document.createElement('div');
-    planet.classList.add('planet');
-    planet.style.width = p.size + 'px';
-    planet.style.height = p.size + 'px';
-    planet.style.background = p.color;
-    planet.style.boxShadow = `0 0 40px 14px ${p.glow}`;
-    const pos = randomPosition(p.size);
-    planet.style.left = pos.x + 'px';
-    planet.style.top = pos.y + 'px';
-
-    // Efeito de rotação lenta
-    let angle = Math.random() * 360;
-    setInterval(() => {
-      angle += 0.3;
-      planet.style.transform = `rotate(${angle}deg)`;
-    }, 20);
-
-    planet.addEventListener('click', () => {
-      if (planet.style.pointerEvents !== 'none') {
-        planet.style.pointerEvents = 'none';
-        planet.style.opacity = '0';
+    const planet = new Planet(p.size, p.color, p.glow);
+    planetsContainer.appendChild(planet.createElement());
+    planet.element.addEventListener('click', () => {
+      if (planet.element.style.pointerEvents !== 'none') {
+        planet.element.style.pointerEvents = 'none';
+        planet.element.style.opacity = '0';
         clickedCount++;
         if (clickedCount === totalPlanets) {
           showFinalMessage();
         }
       }
     });
-
-    planetsContainer.appendChild(planet);
+    planets.push(planet);
   });
+}
+
+function animatePlanets() {
+  planets.forEach(p => p.rotate());
+  requestAnimationFrame(animatePlanets);
+}
+
+function draw() {
+  ctx.clearRect(0, 0, w, h);
+  stars.forEach(s => s.draw());
+  requestAnimationFrame(draw);
 }
 
 function showFinalMessage() {
   message.style.display = 'block';
-  createFloatingEffect();
+  createFloatingEffect(50);
 }
 
-// ======= Animação de corações, planetas e estrelas =======
-const icons = ['❤️', '🌍', '✨', '💫', '🪐'];
+// ==== Animação dos corações, planetas e estrelas brilhantes ====
+const icons = ['❤️', '🪐', '✨', '💫', '🌟', '🌍', '🌙'];
 
-function createFloatingEffect() {
-  for(let i = 0; i < 30; i++) {
+function createFloatingEffect(amount = 20) {
+  for(let i = 0; i < amount; i++) {
     const span = document.createElement('span');
     span.textContent = icons[Math.floor(Math.random() * icons.length)];
     span.style.left = (50 + (Math.random() * 60 - 30)) + 'vw';
     span.style.top = (50 + (Math.random() * 60 - 30)) + 'vh';
     span.style.animationDelay = (Math.random() * 4) + 's';
-    span.style.fontSize = (15 + Math.random() * 20) + 'px';
+    span.style.fontSize = (15 + Math.random() * 25) + 'px';
     if(['❤️'].includes(span.textContent)) span.classList.add('heart');
-    else if(['🌍', '🪐'].includes(span.textContent)) span.classList.add('planet-icon');
+    else if(['🪐','🌍'].includes(span.textContent)) span.classList.add('planet-icon');
     else span.classList.add('star-icon');
     floatingEffect.appendChild(span);
-
-    // Remove após animação para não encher o DOM
     setTimeout(() => {
       span.remove();
     }, 4000);
@@ -242,6 +253,8 @@ function createFloatingEffect() {
 }
 
 createPlanets();
+animatePlanets();
+draw();
 </script>
 
 </body>

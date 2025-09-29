@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Biel te ama muito <3</title>
+<style>
+  /* Reset e estilo básico */
+  body, html {
+    margin: 0; padding: 0;
+    overflow: hidden;
+    height: 100vh;
+    background: radial-gradient(ellipse at center, #020111 0%, #3a3a52 70%, #000000 100%);
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    color: white;
+    user-select: none;
+  }
+  #gameContainer {
+    position: relative;
+    width: 100vw;
+    height: 100vh;
+  }
+  canvas#stars {
+    position: absolute;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    z-index: 0;
+  }
+  #planetsContainer {
+    position: absolute;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    z-index: 1;
+  }
+  .planet {
+    position: absolute;
+    border-radius: 50%;
+    box-shadow: 0 0 15px 5px rgba(255,255,255,0.3);
+    cursor: pointer;
+    transition: transform 0.3s ease, opacity 0.5s ease;
+  }
+  .planet:hover {
+    transform: scale(1.1);
+  }
+  #message {
+    position: absolute;
+    bottom: 40px;
+    width: 100%;
+    text-align: center;
+    font-size: 2.2em;
+    font-weight: bold;
+    color: #ff4081;
+    text-shadow: 0 0 10px #ff4081;
+    z-index: 2;
+    user-select: none;
+  }
+</style>
+</head>
+<body>
+
+<div id="gameContainer">
+  <canvas id="stars"></canvas>
+  <div id="planetsContainer"></div>
+  <div id="message"></div>
+</div>
+
+<script>
+// ======= Fundo Estrelado Animado =======
+const canvas = document.getElementById('stars');
+const ctx = canvas.getContext('2d');
+let w, h;
+function resize() {
+  w = canvas.width = window.innerWidth;
+  h = canvas.height = window.innerHeight;
+}
+resize();
+window.addEventListener('resize', resize);
+
+class Star {
+  constructor() {
+    this.x = Math.random() * w;
+    this.y = Math.random() * h;
+    this.radius = Math.random() * 1.2;
+    this.alpha = Math.random();
+    this.delta = 0.01 + Math.random() * 0.02;
+  }
+  draw() {
+    this.alpha += this.delta;
+    if(this.alpha <= 0 || this.alpha >= 1) this.delta = -this.delta;
+    ctx.beginPath();
+    ctx.arc(this.x, this.y, this.radius, 0, 2 * Math.PI);
+    ctx.fillStyle = `rgba(255,255,255,${this.alpha.toFixed(2)})`;
+    ctx.fill();
+  }
+}
+
+const stars = [];
+for(let i = 0; i < 150; i++) {
+  stars.push(new Star());
+}
+
+function animateStars() {
+  ctx.clearRect(0, 0, w, h);
+  stars.forEach(s => s.draw());
+  requestAnimationFrame(animateStars);
+}
+animateStars();
+
+// ======= Planetas =======
+const planetsContainer = document.getElementById('planetsContainer');
+const message = document.getElementById('message');
+
+const planetData = [
+  { size: 70, color: '#ff6f91', glow: '#ff6f91' },
+  { size: 50, color: '#4d79ff', glow: '#4d79ff' },
+  { size: 60, color: '#ffc75f', glow: '#ffc75f' },
+  { size: 55, color: '#00c9a7', glow: '#00c9a7' },
+  { size: 65, color: '#d65db1', glow: '#d65db1' },
+  { size: 45, color: '#845ec2', glow: '#845ec2' },
+  { size: 50, color: '#ff9671', glow: '#ff9671' },
+  { size: 55, color: '#0081cf', glow: '#0081cf' },
+  { size: 60, color: '#f9f871', glow: '#f9f871' },
+  { size: 70, color: '#2d2d34', glow: '#2d2d34' },
+];
+
+let clickedCount = 0;
+const totalPlanets = planetData.length;
+
+function randomPosition(size) {
+  const padding = 20;
+  const x = Math.random() * (window.innerWidth - size - padding * 2) + padding;
+  const y = Math.random() * (window.innerHeight - size - padding * 2) + padding;
+  return { x, y };
+}
+
+function createPlanets() {
+  planetData.forEach((p, i) => {
+    const planet = document.createElement('div');
+    planet.classList.add('planet');
+    planet.style.width = p.size + 'px';
+    planet.style.height = p.size + 'px';
+    planet.style.background = p.color;
+    planet.style.boxShadow = `0 0 20px 8px ${p.glow}`;
+    const pos = randomPosition(p.size);
+    planet.style.left = pos.x + 'px';
+    planet.style.top = pos.y + 'px';
+
+    // Efeito de rotação lenta
+    let angle = Math.random() * 360;
+    setInterval(() => {
+      angle += 0.2;
+      planet.style.transform = `rotate(${angle}deg)`;
+    }, 30);
+
+    planet.addEventListener('click', () => {
+      if (planet.style.pointerEvents !== 'none') {
+        planet.style.pointerEvents = 'none';
+        planet.style.opacity = '0';
+        clickedCount++;
+        if (clickedCount === totalPlanets) {
+          message.textContent = 'Biel te ama muito <3';
+        }
+      }
+    });
+
+    planetsContainer.appendChild(planet);
+  });
+}
+
+createPlanets();
+
+</script>
+
+</body>
+</html>
